@@ -1,0 +1,8 @@
+rootProject.name = 'axon-saga'
+
+include 'common'
+include 'delivery'
+include 'inventory'
+include 'order'
+include 'payment'
+include 'report'
