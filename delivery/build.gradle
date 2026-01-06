@@ -1,0 +1,10 @@
+plugins {
+}
+
+dependencies {
+    implementation project(':common')
+}
+
+bootJar {
+    archiveFileName = "delivery.jar"
+}

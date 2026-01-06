@@ -1,9 +1,9 @@
 server:
-  port: 18081
+  port: 18082
 
 spring:
   application:
-    name: order
+    name: payment
 
   datasource:
     url: jdbc:mysql://localhost:3306/axon_study_db?useSSL=false&serverTimezone=Asia/Seoul
@@ -15,19 +15,9 @@ spring:
     hibernate:
       ddl-auto: create
     show-sql: false
-    database-platform: org.hibernate.dialect.MySQLDialect
 
 axon:
   serializer:
     general: xstream
   axonserver:
     servers: localhost:8124
-
-springdoc:
-  packages-to-scan: com.junwoo.order.controller
-  paths-to-match: /**
-
-logging:
-  level:
-    com.junwoo: info
-    org.axonframework: info
