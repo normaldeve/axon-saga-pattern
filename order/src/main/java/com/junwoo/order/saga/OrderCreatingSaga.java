@@ -12,6 +12,7 @@ import com.junwoo.order.command.CompleteOrderCreateCommand;
 import com.junwoo.order.event.CompletedCreateOrderEvent;
 import com.junwoo.order.event.CreatedOrderEvent;
 import com.junwoo.order.service.CompensatingService;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -20,6 +21,7 @@ import org.axonframework.modelling.saga.EndSaga;
 import org.axonframework.modelling.saga.SagaEventHandler;
 import org.axonframework.modelling.saga.StartSaga;
 import org.axonframework.spring.stereotype.Saga;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
@@ -31,14 +33,24 @@ import java.util.concurrent.TimeUnit;
  */
 @Saga
 @Slf4j
-@RequiredArgsConstructor
+@NoArgsConstructor
 public class OrderCreatingSaga {
 
     private final HashMap<String, String> aggregateIdMap = new HashMap<>();
 
-    private transient final CommandGateway commandGateway;
+    private transient CommandGateway commandGateway;
 
-    private final CompensatingService compensatingService;
+    private CompensatingService compensatingService;
+
+    @Autowired
+    public void setCommandGateway(CommandGateway commandGateway) {
+        this.commandGateway = commandGateway;
+    }
+
+    @Autowired
+    public void setCompensatingService(CompensatingService compensatingService) {
+        this.compensatingService = compensatingService;
+    }
 
     @StartSaga
     @SagaEventHandler(associationProperty = "orderId")
