@@ -56,13 +56,13 @@ public class OrderAggregate {
         log.info("[@CommandHandler] Executing <CreateOrderCommand> for Order Id: {}", createOrderCommand.getOrderId());
 
         CreatedOrderEvent createOrderEvent = new CreatedOrderEvent();
-        createOrderEvent.setOrderId(createOrderEvent.getOrderId());
+        createOrderEvent.setOrderId(createOrderCommand.getOrderId());
         createOrderEvent.setUserId(createOrderCommand.getUserId());
         createOrderEvent.setOrderDateTime(createOrderCommand.getOrderDateTime());
-        createOrderEvent.setOrderStatus(createOrderEvent.getOrderStatus());
+        createOrderEvent.setOrderStatus(createOrderCommand.getOrderStatus());
         createOrderEvent.setTotalOrderAmt(createOrderCommand.getTotalOrderAmt());
         createOrderEvent.setOrderDetails(createOrderCommand.getOrderDetails());
-        createOrderEvent.setPaymentId(createOrderEvent.getPaymentId());
+        createOrderEvent.setPaymentId(createOrderCommand.getPaymentId());
 
         createOrderEvent.setPaymentDetails(createOrderCommand.getPaymentDetails());
         createOrderEvent.setTotalOrderAmt(createOrderCommand.getTotalOrderAmt());

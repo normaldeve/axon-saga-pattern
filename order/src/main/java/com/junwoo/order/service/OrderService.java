@@ -1,10 +1,7 @@
 package com.junwoo.order.service;
 
 import com.junwoo.common.config.Constants;
-import com.junwoo.common.dto.InventoryDTO;
-import com.junwoo.common.dto.OrderDetailDTO;
-import com.junwoo.common.dto.PaymentDetailDTO;
-import com.junwoo.common.dto.PaymentKindEnum;
+import com.junwoo.common.dto.*;
 import com.junwoo.common.queries.GetInventoryByProductIdQuery;
 import com.junwoo.common.vo.ResultVO;
 import com.junwoo.order.command.CreateOrderCommand;
@@ -25,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -70,13 +68,13 @@ public class OrderService {
 
         List<OrderDetailDTO> newOrderDetails = request.getOrderReqDetails().stream()
                 .map(o -> new OrderDetailDTO(orderId, o.getProductId(), o.getQty(), o.getQty() * getUnitPrice(inventories, o.getProductId())))
-                .toList();
+                .collect(Collectors.toList());
 
         int totalOrderAmt = newOrderDetails.stream().mapToInt(OrderDetailDTO::getOrderAmt).sum();
 
         List<PaymentDetailDTO> newPaymentDetails = request.getPaymentReqDetails().stream()
                 .map(p -> new PaymentDetailDTO(orderId, paymentId, p.getPaymentKind(), (int) Math.round(p.getPaymentRate() * totalOrderAmt)))
-                .toList();
+                .collect(Collectors.toList());
 
         int totalPaymentAmt = newPaymentDetails.stream().mapToInt(PaymentDetailDTO::getPaymentAmt).sum();
 
@@ -84,11 +82,13 @@ public class OrderService {
                 .orderId(orderId)
                 .userId(userId)
                 .orderDateTime(LocalDateTime.now())
+                .orderStatus(OrderStatusEnum.CREATED.value())
                 .totalOrderAmt(totalOrderAmt)
                 .orderDetails(newOrderDetails)
                 .paymentId(paymentId)
                 .paymentDetails(newPaymentDetails)
                 .totalPaymentAmt(totalPaymentAmt)
+                .isCompensation(false)
                 .build();
 
         try {
@@ -99,6 +99,7 @@ public class OrderService {
             retVO.setReturnMessage("Order Created");
             retVO.setResult(createOrderCommand);
         } catch (Exception e) {
+            log.error("🔥 Command dispatch failed", e);
             retVO.setReturnCode(false);
             retVO.setReturnMessage(e.getMessage());
         }
@@ -177,11 +178,11 @@ public class OrderService {
     private int getUnitPrice(List<ResultVO<InventoryDTO>> inventories, String productId) {
         log.info("[OrderService] Executing <getUnitPrice>");
 
-        Optional<ResultVO<InventoryDTO>> optInvetory = inventories.stream()
+        Optional<ResultVO<InventoryDTO>> optInventory = inventories.stream()
                 .filter(obj -> productId.equals(obj.getResult().getProductId()))
                 .findFirst();
 
-        return (optInvetory.map(inventoryDTOResultVO ->
+        return (optInventory.map(inventoryDTOResultVO ->
                 inventoryDTOResultVO.getResult().getUnitPrice()).orElse(0));
     }
 }
