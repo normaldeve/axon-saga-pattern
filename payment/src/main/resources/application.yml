@@ -21,3 +21,8 @@ axon:
     general: xstream
   axonserver:
     servers: localhost:8124
+
+logging:
+  level:
+    com.junwoo: info
+    org.axonframework: info

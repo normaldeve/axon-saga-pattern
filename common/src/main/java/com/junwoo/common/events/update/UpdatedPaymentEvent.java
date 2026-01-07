@@ -1,6 +1,6 @@
 package com.junwoo.common.events.update;
 
-import com.agilemall.common.dto.PaymentDetailDTO;
+import com.junwoo.common.dto.PaymentDetailDTO;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

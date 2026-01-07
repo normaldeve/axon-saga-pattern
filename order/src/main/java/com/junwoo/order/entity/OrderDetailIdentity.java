@@ -1,7 +1,7 @@
 package com.junwoo.order.entity;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
+import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,7 +14,7 @@ import java.io.Serializable;
  * @author junnukim1007gmail.com
  * @date 26. 1. 6.
  */
-@Embedded
+@Embeddable
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

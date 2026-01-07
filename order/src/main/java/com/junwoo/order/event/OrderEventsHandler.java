@@ -7,12 +7,14 @@ import com.junwoo.order.entity.OrderDetailIdentity;
 import com.junwoo.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.weaver.ast.Or;
 import org.axonframework.eventhandling.EventHandler;
 import org.axonframework.eventhandling.gateway.EventGateway;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  *
@@ -55,6 +57,28 @@ public class OrderEventsHandler {
         } catch (Exception e) {
             log.error(e.getMessage());
             eventGateway.publish(new FailedCreateOrderEvent(event.getOrderId()));
+        }
+    }
+
+    @EventHandler
+    private void on(CompletedCreateOrderEvent event) {
+        log.info("[@EventHandler] Executing on <CompletedCreateOrderEvent> for Order Id: {}", event.getOrderId());
+
+        try {
+            Optional<Order> optOrder = orderRepository.findById(event.getOrderId());
+            if (optOrder.isPresent()) {
+                Order order = optOrder.get();
+                order.setOrderStatus(event.getOrderStatus());
+                orderRepository.save(order);
+            } else {
+                log.error("Can't get Order for Order Id: {}", event.getOrderId());
+                eventGateway.publish(new FailedCreateOrderEvent(event.getOrderId()));
+            }
+        } catch (Exception e) {
+            log.error("Error is occur during handle <CompletedCreateOrderEvent>: {}", e.getMessage());
+
+            eventGateway.publish(new FailedCompleteCreateOrderEvent(event.getOrderId()));
+
         }
     }
 }

@@ -1,9 +1,11 @@
 package com.junwoo.order.aggregate;
 
 import com.junwoo.common.dto.OrderDTO;
+import com.junwoo.order.command.CompleteOrderCreateCommand;
 import com.junwoo.order.command.CreateOrderCommand;
 import com.junwoo.order.entity.OrderDetail;
 import com.junwoo.order.entity.OrderDetailIdentity;
+import com.junwoo.order.event.CompletedCreateOrderEvent;
 import com.junwoo.order.event.CreatedOrderEvent;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +15,7 @@ import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.modelling.command.AggregateLifecycle;
 import org.axonframework.modelling.command.AggregateMember;
 import org.axonframework.spring.stereotype.Aggregate;
+import org.springframework.beans.BeanUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -69,6 +72,17 @@ public class OrderAggregate {
         AggregateLifecycle.apply(createOrderEvent);
     }
 
+    @CommandHandler
+    private void handle(CompleteOrderCreateCommand completeOrderCreateCommand) throws RuntimeException {
+
+        log.info("[@CommandHandler] Executing <CompleteOrderCreateCommand> for Order Id: {}", completeOrderCreateCommand.getOrderId());
+
+        CompletedCreateOrderEvent completedCreateOrderEvent = new CompletedCreateOrderEvent();
+        BeanUtils.copyProperties(completeOrderCreateCommand, completedCreateOrderEvent);
+
+        AggregateLifecycle.apply(completedCreateOrderEvent);
+    }
+
     @EventSourcingHandler
     private void on(CreatedOrderEvent event) {
         log.info("[@EventSourcingHandler] Executing <CreatedOrderEvent> for Order Id: {}", event.getOrderId());
@@ -81,5 +95,12 @@ public class OrderAggregate {
                 .map(o -> new OrderDetail((new OrderDetailIdentity(this.orderId, o.getProductId())), o.getQty(), o.getOrderAmt()))
                 .toList();
         this.totalOrderAmt = event.getTotalOrderAmt();
+    }
+
+    @EventSourcingHandler
+    private void on(CompletedCreateOrderEvent event) {
+        log.info("[@EventSourcingHandler] Executing <CompletedCreateOrderEvent> for Order Id: {}", event.getOrderId());
+
+        this.orderStatus = event.getOrderStatus();
     }
 }

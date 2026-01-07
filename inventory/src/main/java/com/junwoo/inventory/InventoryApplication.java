@@ -1,8 +1,11 @@
 package com.junwoo.inventory;
 
+import com.junwoo.inventory.config.AxonConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Import;
 
+@Import({AxonConfig.class})
 @SpringBootApplication
 public class InventoryApplication {
 

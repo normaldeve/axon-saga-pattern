@@ -1,0 +1,59 @@
+services:
+  axonserver:
+    image: axoniq/axonserver:latest
+    container_name: axon-study-axonserver
+    restart: unless-stopped
+
+    ports:
+      - "8024:8024"   # Axon Dashboard
+      - "8124:8124"   # Axon gRPC
+
+    environment:
+      AXONSERVER_NAME: axon-study-axonserver
+      AXONSERVER_HOSTNAME: axonserver
+      AXONSERVER_DEVMODE_ENABLED: "true"
+      AXONSERVER_EVENTSTORE: "/data/events"
+      AXONSERVER_CONTROLDB: "/data/control"
+
+    volumes:
+      - axonserver-data:/data
+
+    networks:
+      - axon-study-network
+
+
+  mysql:
+    image: mysql:8.0
+    container_name: axon-study-mysql
+    restart: unless-stopped
+
+    ports:
+      - "3306:3306"
+
+    environment:
+      MYSQL_ROOT_PASSWORD: axon_study_root
+      MYSQL_DATABASE: axon_study_db
+      MYSQL_USER: axon_study_user
+      MYSQL_PASSWORD: axon_study_pass
+      TZ: Asia/Seoul
+
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+    networks:
+      - axon-study-network
+
+
+volumes:
+  axonserver-data:
+  mysql-data:
+
+
+networks:
+  axon-study-network:
+    driver: bridge

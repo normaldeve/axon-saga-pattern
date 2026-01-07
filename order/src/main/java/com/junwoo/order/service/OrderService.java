@@ -55,7 +55,7 @@ public class OrderService {
             return retVO;
         }
 
-        log.info("==== [Create Order] #!: <isValidInventory> ====");
+        log.info("==== [Create Order] #1: <isValidInventory> ====");
         List<ResultVO<InventoryDTO>> inventories = getInventory(request.getOrderReqDetails());
         String retCheck = isValidInventory(inventories);
         if (!retCheck.isEmpty()) {
