@@ -1,6 +1,7 @@
 package com.junwoo.order.event;
 
 import com.junwoo.common.dto.OrderDetailDTO;
+import com.junwoo.common.events.create.CancelledCreateDeliveryEvent;
 import com.junwoo.order.entity.Order;
 import com.junwoo.order.entity.OrderDetail;
 import com.junwoo.order.entity.OrderDetailIdentity;
@@ -79,6 +80,18 @@ public class OrderEventsHandler {
 
             eventGateway.publish(new FailedCompleteCreateOrderEvent(event.getOrderId()));
 
+        }
+    }
+
+    @EventHandler
+    private void on(CancelledCreateOrderEvent event) {
+        log.info("[@EventHandler] Executing <CancelledCreateOrderEvent> for Order Id: {}", event.getOrderId());
+
+        try {
+            Optional<Order> optOrder = orderRepository.findById(event.getOrderId());
+            optOrder.ifPresent(orderRepository::delete);
+        } catch (Exception e) {
+            log.error(e.getMessage());
         }
     }
 }

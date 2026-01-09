@@ -1,10 +1,12 @@
 package com.junwoo.order.aggregate;
 
+import com.junwoo.common.command.create.CancelCreateOrderCommand;
 import com.junwoo.common.dto.OrderDTO;
 import com.junwoo.order.command.CompleteOrderCreateCommand;
 import com.junwoo.order.command.CreateOrderCommand;
 import com.junwoo.order.entity.OrderDetail;
 import com.junwoo.order.entity.OrderDetailIdentity;
+import com.junwoo.order.event.CancelledCreateOrderEvent;
 import com.junwoo.order.event.CompletedCreateOrderEvent;
 import com.junwoo.order.event.CreatedOrderEvent;
 import lombok.NoArgsConstructor;
@@ -83,6 +85,16 @@ public class OrderAggregate {
         AggregateLifecycle.apply(completedCreateOrderEvent);
     }
 
+    @CommandHandler
+    private void handle(CancelCreateOrderCommand cancelCreateOrderCommand) {
+        log.info("[@CommandHandler] Executing <CancelCreateOrderCommand> for Order Id:{}", cancelCreateOrderCommand.getOrderId());
+
+        CancelledCreateOrderEvent cancelledCreateOrderEvent = new CancelledCreateOrderEvent();
+        BeanUtils.copyProperties(cancelCreateOrderCommand, cancelledCreateOrderEvent);
+
+        AggregateLifecycle.apply(cancelledCreateOrderEvent);
+    }
+
     @EventSourcingHandler
     private void on(CreatedOrderEvent event) {
         log.info("[@EventSourcingHandler] Executing <CreatedOrderEvent> for Order Id: {}", event.getOrderId());
@@ -100,6 +112,13 @@ public class OrderAggregate {
     @EventSourcingHandler
     private void on(CompletedCreateOrderEvent event) {
         log.info("[@EventSourcingHandler] Executing <CompletedCreateOrderEvent> for Order Id: {}", event.getOrderId());
+
+        this.orderStatus = event.getOrderStatus();
+    }
+
+    @EventSourcingHandler
+    private void on(CancelledCreateOrderEvent event) {
+        log.info("[@EventSourcingHandler] Executing <CancelledCreateOrderEvent> for Order Id: {}", event.getOrderId());
 
         this.orderStatus = event.getOrderStatus();
     }

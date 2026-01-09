@@ -1,5 +1,6 @@
 package com.junwoo.order.service;
 
+import com.junwoo.common.command.create.CancelCreateOrderCommand;
 import com.junwoo.common.command.create.CreateDeliveryCommand;
 import com.junwoo.common.command.create.CreateReportCommand;
 import com.junwoo.common.config.Constants;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -33,6 +35,15 @@ public class CompensatingService {
 
     public void cancelCreateOrder(HashMap<String, String> aggregateIdMap) {
         log.info("[CompensatingService] Executing <cancelCreateOrder> for Order Id: {}", aggregateIdMap.get(ServiceNameEnum.ORDER.value()));
+
+        try {
+            CancelCreateOrderCommand cancelCreateOrderCommand = CancelCreateOrderCommand.builder()
+                    .orderId(aggregateIdMap.get(ServiceNameEnum.ORDER.value())).build();
+
+            commandGateway.sendAndWait(cancelCreateOrderCommand, Constants.GATEWAY_TIMEOUT, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("Error is occurred during <cancelCreateOrder>: {}", e.getMessage());
+        }
     }
 
     public void cancelCreatePayment(HashMap<String, String> aggregateMap) {

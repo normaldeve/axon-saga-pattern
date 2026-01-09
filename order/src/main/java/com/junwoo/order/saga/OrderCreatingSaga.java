@@ -8,9 +8,12 @@ import com.junwoo.common.dto.OrderStatusEnum;
 import com.junwoo.common.dto.ServiceNameEnum;
 import com.junwoo.common.events.create.CreatedDeliveryEvent;
 import com.junwoo.common.events.create.CreatedPaymentEvent;
+import com.junwoo.common.events.create.FailedCreatePaymentEvent;
 import com.junwoo.order.command.CompleteOrderCreateCommand;
+import com.junwoo.order.event.CancelledCreateOrderEvent;
 import com.junwoo.order.event.CompletedCreateOrderEvent;
 import com.junwoo.order.event.CreatedOrderEvent;
+import com.junwoo.order.event.FailedCreateOrderEvent;
 import com.junwoo.order.service.CompensatingService;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -138,5 +141,32 @@ public class OrderCreatingSaga {
         log.info("==== [Create Order] Transaction is FINISHED ====");
 
         compensatingService.updateReport(event.getOrderId(), true);
+    }
+
+    @SagaEventHandler(associationProperty = "orderId")
+    private void on(FailedCreateOrderEvent event) {
+        log.info("[Saga] <FailedCreateOrderEvent> is received for Order Id: {}", event.getOrderId());
+
+        log.info("==== [Create Order] Compensate <CancelCreateOrderCommand> ====");
+
+        compensatingService.cancelCreateOrder(this.aggregateIdMap);
+    }
+
+    @SagaEventHandler(associationProperty = "orderId")
+    private void on(FailedCreatePaymentEvent event) {
+        log.info("[Saga] <FailedCreatePaymentEvent> is received for Order Id: {}", event.getOrderId());
+
+        log.info("==== [Create Order] Compensate <CancelCreateOrderCommand> ====");
+
+        compensatingService.cancelCreateOrder(this.aggregateIdMap);
+
+    }
+
+    @EndSaga
+    @SagaEventHandler(associationProperty = "orderId")
+    private void on(CancelledCreateOrderEvent event) {
+        log.info("[Saga] CancelledCreateOrderEvent is received for Order Id: {}", event.getOrderId());
+
+        log.info("==== [Create Order] Transaction is Aborted ====");
     }
 }
